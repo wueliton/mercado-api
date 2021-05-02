@@ -1,5 +1,6 @@
+const moment = require("moment");
 const mysql = require("mysql");
-
+const date = moment().utc().format('yyyy-MM-DD hh:mm:ss');
 const bdConnect = () => {
   return mysql.createConnection({
     host: process.env.MYSQL_HOST,
@@ -44,8 +45,7 @@ module.exports = {
 
   insert(req, res) {
     const connection = bdConnect();
-
-    fields = [null, req.body.name, req.body.last_name, req.body.phone, "now()"];
+    fields = [null, req.body.name, req.body.last_name, req.body.phone, date];
 
     if (!req.body.name || req.body.name === null || req.body.name === undefined)
       return res
@@ -80,10 +80,35 @@ module.exports = {
               },
             });
           }
-          return res.send(results);
+          return res.send({
+            ...req.body
+          });
         }
       );
     }
   },
-  
+
+  update(req,res) {
+    const connection = bdConnect();
+    const id = req.params.id;
+    console.log(id);
+    fields = [req.body.name, req.body.last_name, req.body.phone, date];
+    connection.query(
+      "update users set name = ?, last_name = ?, phone = ?, last_update = ? where id ='" + id + "'",
+      fields,
+      function (error, results) {
+        if (error) {
+          return res.status(404).send({
+            error: {
+              msg: "Erro ao tentar alterar o usuario",
+              error,
+            },
+          });
+        }
+        return res.send({
+          ...req.body,id
+        });
+      }
+    );
+  },
 };
