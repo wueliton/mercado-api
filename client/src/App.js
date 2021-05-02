@@ -10,9 +10,6 @@ function App() {
   return (
     <Router history={hist}>
       <Switch>
-        <Route>
-          <div>Index</div>
-        </Route>
         <UserProvider>
           <Route path="/users">
             <TabelaUsersComponent></TabelaUsersComponent>
