@@ -1,6 +1,6 @@
 const moment = require("moment");
 const mysql = require("mysql");
-const date = moment().utc().format('yyyy-MM-DD hh:mm:ss');
+const date = moment().utc().format("yyyy-MM-DD hh:mm:ss");
 const bdConnect = () => {
   return mysql.createConnection({
     host: process.env.MYSQL_HOST,
@@ -13,14 +13,17 @@ const bdConnect = () => {
 module.exports = {
   findAll(req, res) {
     const connection = bdConnect();
-    connection.query("select * from users", function (error, results, fields) {
-      if (error) {
-        return res.status(404).send({
-          error: { msg: "Erro ao tentar recuperar os usuários" },
-        });
+    connection.query(
+      "select * from users where deleted=0",
+      function (error, results, fields) {
+        if (error) {
+          return res.status(404).send({
+            error: { msg: "Erro ao tentar recuperar os usuários" },
+          });
+        }
+        return res.send(results);
       }
-      return res.send(results);
-    });
+    );
   },
 
   findById(req, res) {
@@ -28,7 +31,7 @@ module.exports = {
     const id = req.params.id;
 
     connection.query(
-      "select * from users where id='" + id + "'",
+      "select * from users where id='" + id + "' and deleted=0",
       function (error, results) {
         if (error) {
           return res.status(404).send({
@@ -45,7 +48,14 @@ module.exports = {
 
   insert(req, res) {
     const connection = bdConnect();
-    fields = [null, req.body.name, req.body.last_name, req.body.phone, date];
+    fields = [
+      null,
+      req.body.name,
+      req.body.last_name,
+      req.body.phone,
+      "0",
+      date,
+    ];
 
     if (!req.body.name || req.body.name === null || req.body.name === undefined)
       return res
@@ -69,7 +79,7 @@ module.exports = {
         .send({ error: { msg: "O campo de telefone é inválido" } });
     else {
       connection.query(
-        "insert into users values (?, ?, ?, ?, ?)",
+        "insert into users values (?, ?, ?, ?, ?, ?)",
         fields,
         function (error, results) {
           if (error) {
@@ -81,20 +91,22 @@ module.exports = {
             });
           }
           return res.send({
-            ...req.body
+            ...req.body,
+            id: results.insertId,
           });
         }
       );
     }
   },
 
-  update(req,res) {
+  update(req, res) {
     const connection = bdConnect();
     const id = req.params.id;
-    console.log(id);
-    fields = [req.body.name, req.body.last_name, req.body.phone, date];
+    fields = [req.body.name, req.body.last_name, req.body.phone, date, "0"];
     connection.query(
-      "update users set name = ?, last_name = ?, phone = ?, last_update = ? where id ='" + id + "'",
+      "update users set name = ?, last_name = ?, phone = ?, last_update = ?, deleted = ? where id ='" +
+        id +
+        "'",
       fields,
       function (error, results) {
         if (error) {
@@ -106,7 +118,28 @@ module.exports = {
           });
         }
         return res.send({
-          ...req.body,id
+          ...req.body,
+          id,
+        });
+      }
+    );
+  },
+
+  delete(req, res) {
+    const connection = bdConnect();
+    const id = req.params.id;
+
+    connection.query(
+      "update users set deleted = '1' where id = ? and deleted = '0'",
+      [id],
+      function (error, results) {
+        if (error) {
+          return res
+            .status(404)
+            .send({ error: { msg: "Erro ao tentar excluir", error } });
+        }
+        return res.send({
+          msg: "Registro excluído com sucesso",
         });
       }
     );
