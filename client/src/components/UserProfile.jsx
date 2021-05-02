@@ -1,8 +1,7 @@
 import React, { useContext } from "react";
 import UserContext from "../contexts/user";
-import { NavLink } from "react-router-dom";
 
-const TabelaUsersComponent = () => {
+const UserProfileComponent = () => {
   const { users } = useContext(UserContext);
   return (
     <>
@@ -17,9 +16,7 @@ const TabelaUsersComponent = () => {
               {users.map((item) => (
                 <tr key={item.id}>
                   <td>{item.name}</td>
-                  <td>
-                    <a href={"/user/" + item.id}>Editar Usuario</a>
-                  </td>
+                  <td>Teste</td>
                 </tr>
               ))}
             </tbody>
@@ -30,4 +27,4 @@ const TabelaUsersComponent = () => {
   );
 };
 
-export default TabelaUsersComponent;
+export default UserProfileComponent;

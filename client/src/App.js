@@ -1,6 +1,7 @@
 import "./App.css";
 import { UserProvider } from "./contexts/user";
 import TabelaUsersComponent from "./components/TabelaUsers";
+import UserProfileComponent from "./components/UserProfile";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import { createBrowserHistory } from "history";
 
@@ -11,10 +12,8 @@ function App() {
     <Router history={hist}>
       <Switch>
         <UserProvider>
-          <Route path="/users">
-            <TabelaUsersComponent></TabelaUsersComponent>
-          </Route>
-          <Route path="/user/:id">
+          <Route exact path="/users" component={TabelaUsersComponent} />
+          <Route exact path="/user/:id" component={UserProfileComponent}>
             <div>Teste</div>
           </Route>
         </UserProvider>
